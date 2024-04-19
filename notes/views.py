@@ -52,7 +52,7 @@ def new_article(request):
         title = request.POST.get('title')
         content = request.POST.get('content')
         article = Article.objects.create(title=title, content=content)
-        return redirect('notes:article_view', article_id=article.id)
+        return redirect('notes:index')
     return render(request, 'new_article.html')
 
 
