@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Articles</title>
+  </head>
+  <body>
+    <h1>Articles</h1>
+    <a href="{% url 'notes:new_article' %}">Add New Article</a>
+    <ul>
+      {% for article in articles %}
+      <li>
+        <a href="{% url 'notes:article_view' article_id=article.id %}"
+          >{{ article.title }}</a
+        >
+      </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

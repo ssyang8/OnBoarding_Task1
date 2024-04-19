@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ article.title }}</title>
+  </head>
+  <body>
+    <h1>{{ article.title }}</h1>
+    <div id="content">{{ article.content|safe }}</div>
+    <hr />
+    <h2>Plain Notes</h2>
+    <form method="post">
+      {% csrf_token %}
+      <textarea
+        name="plain_note_text"
+        placeholder="Enter your plain note here..."
+      ></textarea
+      ><br />
+      <button type="submit" name="plain_note">Add Plain Note</button>
+    </form>
+    <ul>
+      {% for note in plain_notes %}
+      <li>{{ note.text }}</li>
+      {% endfor %}
+    </ul>
+
+    <h2>Highlighted Notes</h2>
+    <ul>
+      {% for note in highlighted_notes %}
+      <li>"{{ note.selected_text }}": "{{ note.note_text }}"</li>
+      {% endfor %}
+    </ul>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const content = document.getElementById("content");
+        content.addEventListener("mouseup", function (e) {
+          const selectedText = window.getSelection().toString().trim();
+          if (selectedText.length > 0) {
+            const noteText = prompt("Enter your note for the selected text:");
+            if (noteText) {
+              const formData = new FormData();
+              formData.append("selected_text", selectedText);
+              formData.append("note_text", noteText);
+              formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+
+              fetch("{% url 'notes:add_highlighted_note' article.id %}", {
+                method: "POST",
+                body: formData,
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.success) {
+                    location.reload(); // Reload the page to update the list of notes
+                  } else {
+                    alert("Failed to add note");
+                  }
+                })
+                .catch((error) => console.error("Error:", error));
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
