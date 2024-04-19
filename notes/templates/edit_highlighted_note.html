@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Edit Highlighted Note</title>
+  </head>
+  <body>
+    <form method="POST">
+      {% csrf_token %}
+      <label for="selected_text">Selected Text:</label>
+
+      {{ note.selected_text }}
+      <br />
+      <label for="note_text">Note:</label>
+      <textarea id="note_text" name="note_text">{{ note.note_text }}</textarea>
+
+      <button type="submit">Save Changes</button>
+    </form>
+  </body>
+</html>

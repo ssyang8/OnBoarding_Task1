@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.shortcuts import render, redirect
 from .models import Article, PlainNote, HighlightedNote
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, get_object_or_404
 
 
@@ -56,14 +56,73 @@ def new_article(request):
     return render(request, 'new_article.html')
 
 
-def delete_note(request, note_type, note_id):
-    if note_type == 'plain':
-        note = get_object_or_404(PlainNote, pk=note_id)
-    elif note_type == 'highlighted':
-        note = get_object_or_404(HighlightedNote, pk=note_id)
-    else:
-        return HttpResponseBadRequest("Invalid note type specified")
+def edit_plain_note(request, note_id):
+    note = get_object_or_404(PlainNote, pk=note_id)
+    # Retrieve the 'next' parameter from the URL, or default to 'notes:index' if not provided
+    next_url = request.GET.get('next', 'notes:index')
 
-    article_id = note.article.id
-    note.delete()
-    return redirect('notes:article_view', article_id=article_id)
+    if request.method == 'POST':
+        note.text = request.POST.get('text')
+        note.save()
+        # Redirect to the 'next' URL after saving changes
+        return redirect(next_url)
+
+    return render(request, 'edit_plain_note.html', {'note': note, 'next': next_url})
+
+
+def edit_highlighted_note(request, note_id):
+    note = get_object_or_404(HighlightedNote, pk=note_id)
+    next_url = request.GET.get('next', 'notes:index')
+
+    if request.method == 'POST':
+        # note.selected_text = request.POST.get('selected_text')
+        note.note_text = request.POST.get('note_text')
+        # note.start_position = int(request.POST.get('start_position', 0))
+        # note.end_position = int(request.POST.get('end_position', 0))
+        note.save()
+        return redirect(next_url)  # Adjust the redirect as needed
+    return render(request, 'edit_highlighted_note.html', {'note': note})
+
+
+# Ensure this view only handles POST requests to avoid accidental deletions
+
+def delete_note(request, note_id):
+    # Determine the type based on model or pass the type as parameter
+    # Example assumes type is known and passed via URL or determined somehow
+    try:
+        note = get_object_or_404(PlainNote, pk=note_id)
+        note_type = 'plain'
+    except PlainNote.DoesNotExist:
+        note = get_object_or_404(HighlightedNote, pk=note_id)
+        note_type = 'highlighted'
+
+    if request.method == 'POST':
+        article_id = note.article.id  # Store the article ID before deleting
+        note.delete()
+        next_url = request.POST.get(
+            'next', 'notes:index')  # Default redirection
+        return HttpResponseRedirect(next_url)
+
+    # if not POST method, maybe display a confirmation page or handle differently
+    return HttpResponseBadRequest("Invalid request")
+
+
+def delete_highlighted_note(request, note_id):
+    # Determine the type based on model or pass the type as parameter
+    # Example assumes type is known and passed via URL or determined somehow
+    try:
+        note = get_object_or_404(HighlightedNote, pk=note_id)
+        note_type = 'highlighted'
+    except HighlightedNote.DoesNotExist:
+        note = get_object_or_404(PlainNote, pk=note_id)
+        note_type = 'plain'
+
+    if request.method == 'POST':
+        article_id = note.article.id  # Store the article ID before deleting
+        note.delete()
+        next_url = request.POST.get(
+            'next', 'notes:index')  # Default redirection
+        return HttpResponseRedirect(next_url)
+
+    # if not POST method, maybe display a confirmation page or handle differently
+    return HttpResponseBadRequest("Invalid request")

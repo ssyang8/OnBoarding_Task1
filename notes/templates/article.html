@@ -20,14 +20,64 @@
     </form>
     <ul>
       {% for note in plain_notes %}
-      <li>{{ note.text }}</li>
+      <li>
+        {{ note.text }}
+        <a
+          href="{% url 'notes:edit_plain_note' note.id %}?next={{ request.build_absolute_uri }}"
+          >Edit Note</a
+        >
+        <form
+          action="{% url 'notes:delete_note' note.id %}"
+          method="POST"
+          style="display: inline"
+        >
+          {% csrf_token %}
+          <input
+            type="hidden"
+            name="next"
+            value="{{ request.build_absolute_uri }}"
+          />
+          <button
+            type="submit"
+            class="btn btn-danger"
+            onclick="return confirm('Are you sure?');"
+          >
+            Delete
+          </button>
+        </form>
+      </li>
       {% endfor %}
     </ul>
 
     <h2>Highlighted Notes</h2>
     <ul>
       {% for note in highlighted_notes %}
-      <li>"{{ note.selected_text }}": "{{ note.note_text }}"</li>
+      <li>
+        "{{ note.selected_text }}": "{{ note.note_text }}"
+        <a
+          href="{% url 'notes:edit_highlighted_note' note.id %}?next={{ request.build_absolute_uri }}"
+          >Edit Note</a
+        >
+        <form
+          action="{% url 'notes:delete_highlighted_note' note.id %}"
+          method="POST"
+          style="display: inline"
+        >
+          {% csrf_token %}
+          <input
+            type="hidden"
+            name="next"
+            value="{{ request.build_absolute_uri }}"
+          />
+          <button
+            type="submit"
+            class="btn btn-danger"
+            onclick="return confirm('Are you sure?');"
+          >
+            Delete
+          </button>
+        </form>
+      </li>
       {% endfor %}
     </ul>
     <script>
